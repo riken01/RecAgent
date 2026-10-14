@@ -45,9 +45,8 @@ payload.semanticDescription（感知信号）：用户所处位置或行为变�
 diff[]：场景的最新变化。
 - `changeDetail`：最新事实来源。
   - `field=content`：根据变化判断是否产生新目标。
-  - `field=userVisibilityStatus`：场景从隐藏变为可见，此时根据 `content`（overview、userProfile）提炼意图，不根据 changeDetail。
+  - `field=userVisibilityStatus`：场景从隐藏变为可见，此时根据 `content`（overview、userProfile）提炼意图，不根据 changeDetail；overview 无明确目标时，可从 userProfile 的收藏、关注、记录等行为推断。
 - `overview`、`userProfile`：用于理解背景、目标和约束。
-- userVisibilityStatus 场景中，即使 overview 无明确量化目标，也可从 userProfile 的收藏、关注、记录等具体行为推断阶段性目标。
 
 # 意图生成规则
 
@@ -61,10 +60,9 @@ Intent 表示：从对话、感知信号或场景变化中识别出的，用户�
   - ❌ 禁止（状态/数值）：最近恢复训练、体脂率23%、今天跑步30分钟
   - 行为、状态及数值变化不写入 intentDesc，但可以作为推测兴趣、推荐内容或后续需求的依据。
 - 结合上下文，不要泛化：
-  - ✅ 合适：进入景点+对话中提到喜欢历史→了解该景点的历史文化；生日到了+近期关注粤菜→寻找适合的粤菜餐厅
+  - ✅ 合适：生日到了+近期关注粤菜→寻找适合的粤菜餐厅
   - ❌ 禁止（脱离已知上下文泛化）：生日到了+近期关注粤菜→"策划生日庆祝方案"
 - 优先描述用户具体要做的事情或要解决的问题，不要机械使用"完成/执行/进行"等泛化动词。
-- Intent 只描述用户目标；系统将如何提供服务（如推送提醒、展示推荐卡片）不写入 Intent。
 
 ### 时间规则
 
@@ -80,62 +78,19 @@ intentType、startTime、expireTime 按以下顺序确定：
 
 时间格式：YYYY-MM-DDThh:mm:ss。
 
-### Good Case
+### Good Cases
 
-以下示例中 current_time 均为 2026-09-09T00:00:00（周三）。无值的可选字段不输出。
+Case 1（对话）
+- 输入：chatHistory 中用户依次询问周末杭州游玩建议、两天行程安排、是否需要订酒店、天气、出行准备，未提及交通。
+- intentDesc：预约驾照科目一考试
+- searchQueries：["科目一 预约流程"]
+- 说明：复习方法和题库已回答，不再重复；沿着考驾照的流程推出紧接着的下一步，不跳到对话中没有依据的方向。
 
-Case 1：仅对话记录 → 推断下一步意图
-
-输入要点：chatHistory 中用户依次询问周末杭州游玩建议、两天行程安排、是否需要订酒店、天气、出行准备，未提及交通。
-
-```json
-{
-  "add": [
-    {
-      "intentDesc": "预订周末出游的往返车票",
-      "intentType": "ShortTermIntent",
-      "startTime": "2026-09-09T00:00:00",
-      "expireTime": "2026-09-12T00:00:00",
-      "intentL1Tag": "便捷生活",
-      "intentL2Tag": "票务预定",
-      "searchQueries": ["杭州 周末 高铁余票"],
-      "reasoning": "对话：已规划周末杭州游，未安排交通"
-    }
-  ],
-  "delete": []
-}
-```
-
-要点：行程、酒店、天气均已在对话中完成，不再重复；从「下一步意图」推断交通需求。地点不写入 intentDesc，放入 searchQueries。「这个周末」按 current_time 计算出 expireTime。仅来源于对话，不输出 coSpaceName、subSceneTag。
-
-Case 2：目标完成 → 删除，新目标与已有意图重复 → matchedIntent
-
-输入要点：active_list 中有「体育&田径&备战10月城市马拉松」「健康&健身塑形&提升跑步耐力」；diff 的 subSceneTag 为「跑步」，isCoSpace=true，changeDetail 由「备战 10 月城市马拉松」变为「已完赛 10 月城市马拉松，开始关注提升半马配速」。
-
-```json
-{
-  "add": [
-    {
-      "intentDesc": "提升半程马拉松配速",
-      "intentType": "LongTermIntent",
-      "intentL1Tag": "体育",
-      "intentL2Tag": "田径",
-      "coSpaceName": "跑步",
-      "subSceneTag": "跑步",
-      "matchedIntent": "健康&健身塑形&提升跑步耐力",
-      "reasoning": "场景变化：完赛后开始关注半马配速"
-    }
-  ],
-  "delete": [
-    {
-      "matchedIntent": "体育&田径&备战10月城市马拉松",
-      "reasoning": "用户已完赛10月城市马拉松"
-    }
-  ]
-}
-```
-
-要点：比赛已完成，对应的备战意图放入 delete。新意图比「提升跑步耐力」更具体但目标本质不变，填写 matchedIntent。无明确时间边界，判定为 LongTermIntent。
+Case 2（场景变化）
+- 输入：changeDetail 由「计划报考雅思」变为「已报名 10 月 20 日雅思，口语较弱」。
+- intentDesc：备考雅思口语
+- searchQueries：["雅思口语最新题库"]
+- 说明：根据「已报名」，推出考前准备，并用「口语较弱」聚焦到单一目标。
 
 ## 规则
 
@@ -265,9 +220,14 @@ Case 2：目标完成 → 删除，新目标与已有意图重复 → matchedInt
         "items": {
           "type": "object",
           "properties": {
+            "reasoning": {
+              "type": "string",
+              "maxLength": 30,
+              "description": "触发来源及事实依据，不超过30字。以触发来源开头（对话/感知信号/场景变化，多个来源时并列），再说明支持该意图的事实。"
+            },
             "intentDesc": {
               "type": "string",
-              "description": "从用户视角描述其当前或后续可能关注、推进或需要帮助的目标。只包含一个核心关注点；不总结输入，不写用户状态或数值，不重复已完成任务，不描述助手或模型的内部动作，不直接复制对话原文。"
+              "description": "用户视角的意图描述，只包含一个核心关注点。"
             },
             "intentType": {
               "type": "string",
@@ -308,20 +268,15 @@ Case 2：目标完成 → 删除，新目标与已有意图重复 → matchedInt
                 "type": "string"
               },
               "maxItems": 2,
-              "description": "可选，最多两条，每条为空格分隔的搜索关键词（如「杭州 周末 高铁余票」）。仅当该意图需要时效性信息（如余票、价格、赛程、新闻）时生成。"
-            },
-            "reasoning": {
-              "type": "string",
-              "maxLength": 30,
-              "description": "触发来源及事实依据，不超过30字。以触发来源开头（对话/感知信号/场景变化，多个来源时并列），再说明支持该意图的事实。"
+              "description": "可选，最多两条，每条为空格分隔的搜索关键词。需要借助网络搜索获取信息时生成，模型自身知识即可回答时不生成。"
             }
           },
           "required": [
+            "reasoning",
             "intentDesc",
             "intentType",
             "intentL1Tag",
-            "intentL2Tag",
-            "reasoning"
+            "intentL2Tag"
           ]
         }
       },
@@ -331,17 +286,17 @@ Case 2：目标完成 → 删除，新目标与已有意图重复 → matchedInt
         "items": {
           "type": "object",
           "properties": {
-            "matchedIntent": {
-              "type": "string",
-              "description": "active_list 中被删除意图的 intentL1Tag&intentL2Tag&intentDesc。"
-            },
             "reasoning": {
               "type": "string",
               "maxLength": 30,
               "description": "简要说明目标完成、取消或不再需要关注的事实依据，不超过30字。"
+            },
+            "matchedIntent": {
+              "type": "string",
+              "description": "active_list 中被删除意图的 intentL1Tag&intentL2Tag&intentDesc。"
             }
           },
-          "required": ["matchedIntent", "reasoning"]
+          "required": ["reasoning", "matchedIntent"]
         }
       }
     },
