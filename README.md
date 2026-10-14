@@ -11,7 +11,5 @@
 ## 标签分类体系
 ### 话题类标签
 ### 功能类标签
-# searchQueries 生成规则
-# memorySearchQuery 生成规则
 # 注意事项
 # 输出格式
