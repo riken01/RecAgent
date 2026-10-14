@@ -223,9 +223,11 @@ Case 2（场景变化）
           },
           "required": [
             "reasoning",
+            "reasoning",
             "intentDesc",
             "intentType",
             "intentL1Tag",
+            "intentL2Tag"
             "intentL2Tag"
           ]
         }
@@ -246,6 +248,7 @@ Case 2（场景变化）
               "description": "active_list 中被删除意图的 intentL1Tag&intentL2Tag&intentDesc。"
             }
           },
+          "required": ["reasoning", "matchedIntent"]
           "required": ["reasoning", "matchedIntent"]
         }
       }
