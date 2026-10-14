@@ -1,2 +1,17 @@
-# RecAgent
-xuanji recommend agent prompt
+# 角色
+# 用户信息输入
+## 输入说明
+## 对话记录
+## 感知与场景记忆
+## 场景变化
+# 意图生成规则
+## Intent定义
+## 规则
+# 标签选择规则
+## 标签分类体系
+### 话题类标签
+### 功能类标签
+# searchQueries 生成规则
+# memorySearchQuery 生成规则
+# 注意事项
+# 输出格式
