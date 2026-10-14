@@ -36,18 +36,15 @@ diff[]：用户某一生活场景（由 subSceneTag 标识）的最新变化。i
 
 ## Intent定义
 
-Intent 表示用户当前或未来一段时间内值得提供推荐和服务的目标或兴趣方向。
-
-- 每个 Intent 只包含一个核心关注点，粒度适中：不是"找到工作"、"减脂"这种极粗目标，而是"完善简历"、"准备技术面试"这种可推荐、可服务的具体方向。
-- 结合上下文，不要泛化：生日到了+近期关注粤菜→寻找适合的粤菜餐厅
-- 优先描述用户具体要做的事情或要解决的问题，不要机械使用"完成/执行/进行"等泛化动词。
-- 除非该对象本身构成目标差异，否则不要将公司、品牌、地点等信息写入 intentDesc。
-- Intent 是用户目标，不是用户状态或行为记录，状态和行为只作为推理依据。
-- 系统将如何提供服务不写入 Intent。
+Intent 是用户当前或未来一段时间内值得提供推荐和服务的目标或兴趣方向。
+- 每个 Intent 只包含一个核心关注点，即一个明确的用户目标或需求。
+- Intent 是可驱动推荐的具体目标：不是"找到工作"、"减脂"、"装修房子"这种极粗目标，而是"完善简历"、"投递岗位"、"准备技术面试"这种可推荐、可服务的具体方向；
+- 紧扣已知上下文，不泛化：生日到了+近期关注粤菜 → ✅ 寻找适合的粤菜餐厅，❌ 策划生日庆祝方案。
+- 是用户目标，不是状态或行为记录（❌ 体脂率23%、今天跑步30分钟），状态和行为只作为推理依据。
+- 品牌、地点等仅在决定内容时写入 intentDesc。
 
 ### 时间规则
 
-intentType、startTime、expireTime 按以下顺序确定：
 1. 输入中有明确时间信息（日期、截止时间、「这个周末」「两周后」等）→ ShortTermIntent，并填写：
    - expireTime：结束时间、事件时间或时间范围的终点，相对时间以 current_time 为基准计算。
    - startTime：用户指定的开始时间，或根据事件时间合理反推，无法反推时取 current_time；须满足 current_time ≤ startTime ≤ expireTime。
@@ -76,19 +73,17 @@ Case 2（场景变化）
 
 1. 找线索：综合全部输入，找出反映用户目标的事实（表达的需求、行为、事件或计划、关注的事物），不根据单条信息孤立生成。
 2. 判断阶段，推断下一步：
-   - 已完成 → 进入什么下一阶段、需要复盘什么
-   - 进行中 → 当前还需要的帮助，可能对什么相关方向感兴趣
+   - 已完成 → 下一阶段或复盘
+   - 进行中 → 当前还需要的帮助
    - 未开始 → 需要提前准备的事
    - 开始关注某事物 → 围绕它正在做或准备做的事
 3. 筛选：只保留用户会持续关注、可推荐或可服务的目标；默认 1 个，不同领域的需求可生成多个。
 
 ### 2. 增删判定
 
-根据推理结果，判断放入 add、delete 还是不生成：
-- 新增目标 → 放入 add
-- 目标仍在执行，但进度变化带来新的阶段性需求（如从「报名」进入「备考」）→ 放入 add；仅数值或进度更新、没有新需求时不生成
-- 目标完成/取消/放弃、与新目标冲突，或新增 Intent 代表用户进入新的阶段，导致 active_list 已有 Intent 不再需要持续关注 → 将该已有 Intent 放入 delete
-- 没有有价值的内容 → 不生成 Intent，add 输出空数组。包括：闲聊寒暄；即时查询、即时执行或仅针对当前问题的答案获取；手机（包括闹钟）设置、设备操作（如空调、音响、电视的遥控）；无目标变化的行为或状态记录；仅凭感知信号且缺少其他线索、无法推出明确需求。不得为了有输出而强行生成泛化或牵强的 Intent。
+- 出现新目标，或已有目标进入新阶段 → add。
+- active_list 中的目标已完成、取消、放弃或被新阶段取代 → delete。
+- 以下情况不生成：闲聊寒暄；即时查询或即时执行；手机设置、设备操作；无目标变化的状态记录；感知信号缺少其他线索、推不出明确需求。
 
 ### 3. 特殊场景
 
@@ -99,8 +94,8 @@ Case 2（场景变化）
 ### 4. Intent 消解
 
 检查 add 中每个 Intent 是否与 active_list 或 deleted_list 重复，重复时填写 matchedIntent；与 active_list 中意图完全相同时不输出。
-- 视为重复：核心对象相同，且要做的事相同或近义（如「运动装备选购」与「运动装备升级」）。
-- 不视为重复：仅同领域，但核心对象或要做的事不同（如「准备雅思口语」与「挑选留学院校」）。
+- 视为重复：核心对象相同，且要做的事相同或近义（如「运动装备选购」与「运动装备升级」）；或新 Intent 只是已有 Intent 的细化。
+- 不视为重复：仅同领域或服务于同一更大目标，但对象或要做的事不同（如「准备雅思口语」与「挑选留学院校」）。
 
 # 标签选择规则
 
@@ -186,11 +181,11 @@ Case 2（场景变化）
             },
             "startTime": {
               "type": "string",
-              "description": "可选，目标预计开始时间，格式 YYYY-MM-DDThh:mm:ss，按「时间规则」确定；无明确时间信息时不输出。"
+              "description": "可选，目标预计开始时间，按「时间规则」确定。"
             },
             "expireTime": {
               "type": "string",
-              "description": "可选，目标预计结束/失效时间，格式 YYYY-MM-DDThh:mm:ss，按「时间规则」确定；无明确时间信息时不输出。"
+              "description": "可选，目标预计结束/失效时间，按「时间规则」确定。"
             },
             "intentL1Tag": {
               "type": "string",
@@ -202,15 +197,15 @@ Case 2（场景变化）
             },
             "coSpaceName": {
               "type": "string",
-              "description": "可选，不得推断：来源于 diff 且对应条目 isCoSpace=true 时为该条目的 subSceneTag；其他情况不输出。"
+              "description": "可选，不得推断：来源于 diff 且对应条目 isCoSpace=true 时必须输出，为该条目的 subSceneTag。"
             },
             "subSceneTag": {
               "type": "string",
-              "description": "可选，必须与输入完全一致：来源于 diff 时，为对应条目的 subSceneTag。"
+              "description": "可选，必须与输入完全一致：来源于 diff 时必须输出，为对应条目的 subSceneTag。"
             },
             "matchedIntent": {
               "type": "string",
-              "description": "可选。与 active_list 或 deleted_list 中已有意图重复（判断标准见 Intent 消解）时，填写其 intentL1Tag&intentL2Tag&intentDesc；不重复时不输出。"
+              "description": "可选。与 active_list 或 deleted_list 中已有意图重复（判断标准见 Intent 消解）时，填写其 intentL1Tag&intentL2Tag&intentDesc。"
             },
             "searchQueries": {
               "type": "array",
@@ -223,11 +218,9 @@ Case 2（场景变化）
           },
           "required": [
             "reasoning",
-            "reasoning",
             "intentDesc",
             "intentType",
             "intentL1Tag",
-            "intentL2Tag"
             "intentL2Tag"
           ]
         }
@@ -248,7 +241,6 @@ Case 2（场景变化）
               "description": "active_list 中被删除意图的 intentL1Tag&intentL2Tag&intentDesc。"
             }
           },
-          "required": ["reasoning", "matchedIntent"]
           "required": ["reasoning", "matchedIntent"]
         }
       }
