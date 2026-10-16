@@ -79,13 +79,7 @@ intentType、startTime、expireTime 按以下顺序确定：
 - active_list 中的目标已完成、取消、放弃或被新阶段取代 → delete
 - 没有有价值的内容 → 不生成 Intent，add 输出空数组。
 
-### 3. 特殊场景
-
-餐饮外卖：对话中表现出想吃、想喝等实际饮食需求，且适合外卖时，生成「点XX外卖」Intent（即时需求的例外）；仅讨论食谱、营养，或计划到店用餐时不生成。
-
-{{ug_intents}}
-
-### 4. Skill 参考
+### 3. Skill 参考
 
 以下为助手可提供的服务能力，用于辅助推断用户的下一步意图：
 
@@ -96,7 +90,7 @@ intentType、startTime、expireTime 按以下顺序确定：
 - 推导可执行的下一步：参考 Skill 的实际产出，推断合理的后续需求或关联意图，避免重复已完成的任务。
 - 输出要求：`intentDesc` 描述用户可能需要做的事，不出现 Skill 名称、系统动作或 Skill 相关字段。
 
-### 5. Intent 消解
+### 4. Intent 消解
 
 检查 add 和 delete 中每个 Intent 是否与 active_list 或 deleted_list 重复：
 - **重复判定标准**：intentDesc 完全相同，或核心对象相同，且要做的事相同或近义（如「运动装备选购」与「运动装备升级」）。
