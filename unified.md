@@ -20,8 +20,10 @@ chatHistory、payload、diff 均为可选，可能单独或同时出现。多个
 
 ## 对话记录
 
-chatHistory[]：用户与助手的多轮对话。query 是意图的主要来源；response 仅用于补充上下文，本身不产生意图。
-
+chatHistory[]：用户与助手的多轮对话。query 表示用户提出的原始任务或诉求；response 表示 Agent 已完成的处理及任务当前进展。结合 query 与 response，判断原任务的完成情况，并推断用户后续可能关注的持续性意图。
+特殊响应状态说明（`NO_REPLY` 机制）：
+   - 当 `response` 为 `"NO_REPLY"` 时，代表系统已成功调用 Agent / Skill / 工具接管并**完成了该次即时查询或执行动作**。
+  
 ## 感知信号
 
 payload.semanticDescription：用户所处位置或行为变化的描述，如"用户进入商圈"、"用户打开王者荣耀"。
@@ -30,7 +32,7 @@ payload.semanticDescription：用户所处位置或行为变化的描述，如"�
 
 diff[]：用户某一生活场景（由 subSceneTag 标识）的最新变化。isCoSpace=true 表示该场景是用户已建立的工作空间（CoSpace）。
 - changeDetail：本次变化，是主要依据。
-- field=userVisibilityStatus：场景从隐藏变为可见，此时根据 content 中的 overview、userProfile（收藏、关注、记录等）提炼意图。
+- field=userVisibilityStatus：场景从隐藏变为可见，此时根据 content 中的 overview、userProfile（收藏、关注、记录等）推断意图。
 
 # 意图生成规则
 
@@ -75,31 +77,33 @@ Case 2（场景变化）
 ### 1. 意图推理
 
 1. 找线索：综合全部输入，找出反映用户目标的事实（表达的需求、行为、事件或计划、关注的事物），不根据单条信息孤立生成。
-2. 判断阶段，推断下一步：
+2. 价值判断：判断当前输入是否产生值得推荐的意图，没有有价值的内容不生成意图，add直接生成空数组。不生成意图的场景包括：闲聊寒暄；即时查询、即时执行或仅针对当前问题的答案获取；手机设置、设备操作（如空调、音响、电视的遥控）；无目标变化的行为或状态记录；仅凭感知信号且缺少其他线索、无法推出明确需求。不得为了有输出而强行生成泛化或牵强的 Intent。
+3. 判断阶段，推断下一步：
    - 已完成 → 进入什么下一阶段、需要复盘什么
-   - 进行中 → 当前还需要的帮助，可能对什么相关方向感兴趣
+   - 进行中 → 深入探索目标，或者可能对什么相关方向感兴趣。
    - 未开始 → 需要提前准备的事
    - 开始关注某事物 → 围绕它正在做或准备做的事
-3. 筛选：只保留用户会持续关注、可推荐或可服务的目标；默认 1 个，不同领域的需求可生成多个。
+4. 筛选：只保留用户会持续关注、可推荐或可服务的目标；默认 1 个，不同领域的需求可生成多个。
 
 ### 2. 增删判定
 
 根据推理结果，判断放入 add、delete 还是不生成：
-- 出现新目标，或已有目标进入新阶段 → add
+- 出现 active_list新目标，或已有目标进入新阶段 → add
 - active_list 中的目标已完成、取消、放弃或被新阶段取代 → delete
-- 没有有价值的内容 → 不生成 Intent，add 输出空数组。包括：闲聊寒暄；即时查询、即时执行或仅针对当前问题的答案获取；手机（包括闹钟）设置、设备操作（如空调、音响、电视的遥控）；无目标变化的行为或状态记录；仅凭感知信号且缺少其他线索、无法推出明确需求。不得为了有输出而强行生成泛化或牵强的 Intent。
+- 没有有价值的内容 → 不生成 Intent，add 输出空数组。
 
 ### 3. 特殊场景
 
 餐饮外卖：对话中表现出想吃、想喝等实际饮食需求，且适合外卖时，生成「点XX外卖」Intent（即时需求的例外）；仅讨论食谱、营养，或计划到店用餐时不生成。
 
-{{l2_intents}}
+{{ug_intents}}
 
 ### 4. Intent 消解
 
-检查 add 中每个 Intent 是否与 active_list 或 deleted_list 重复，重复时填写 matchedIntent；与 active_list 中意图完全相同时不输出。
-- 视为重复：核心对象相同，且要做的事相同或近义（如「运动装备选购」与「运动装备升级」）。
-- 不视为重复：仅同领域，但核心对象或要做的事不同（如「准备雅思口语」与「挑选留学院校」）。
+检查 add 和 delete 中每个 Intent 是否与 active_list 或 deleted_list 重复：
+- **重复判定标准**：intentDesc 完全相同，或核心对象相同，且要做的事相同或近义（如「运动装备选购」与「运动装备升级」）。
+- **不重复判定标准**：intentDesc 仅同领域，但核心对象或要做的事不同（如「准备雅思口语」与「挑选留学院校」）。
+- **重复时的处理规则**：若与 `active_list` 中的现有意图重复，**允许将其放入 `add` 中，但必须在该 Intent 的 `matchedIntent` 字段中准确填写**对应的老意图名称（格式如：`intentL1Tag&intentL2Tag&intentDesc` 或直接写老意图的描述）；若不重复，则 `matchedIntent` 留空。
 
 # 标签选择规则
 
@@ -157,34 +161,101 @@ Case 2（场景变化）
 
 # 输出格式
 
-请输出一个 JSON 对象，包含 add 和 delete 两个字段：
+严格按以下 JSON Schema 输出，字段小驼峰(camelCase)。不含任何 Markdown 包裹(如 ```json)或注释，确保下游直接解析。各字段填写规则已写入对应字段 description，须严格遵守。
 
 {
-  "add": [
-    {
-      "reasoning": "string，最多30字符。触发来源及事实依据。以触发来源开头（对话/感知信号/场景变化，多个来源时并列），再说明支持该意图的事实。",
-      "intentDesc": "string，必填。用户视角的意图描述。",
-      "intentType": "string，必填。枚举值：ShortTermIntent 或 LongTermIntent，按「时间规则」确定。",
-      "startTime": "string，可选。目标预计开始时间，格式 YYYY-MM-DDThh:mm:ss，按「时间规则」确定。",
-      "expireTime": "string，可选。目标预计结束/失效时间，格式 YYYY-MM-DDThh:mm:ss，按「时间规则」确定。",
-      "intentL1Tag": "string，必填。一级标签，取标签分类体系中的键名。",
-      "intentL2Tag": "string，必填。二级标签，取 intentL1Tag 对应数组中的值。",
-      "coSpaceName": "string，可选，不得推断。来源于 diff 且对应条目 isCoSpace=true 时必须输出，为该条目的 subSceneTag。",
-      "subSceneTag": "string，可选，必须与输入完全一致。来源于 diff 时必须输出，为对应条目的 subSceneTag。",
-      "matchedIntent": "string，可选。与 active_list 或 deleted_list 中已有意图重复（判断标准见 Intent 消解）时，填写其 intentL1Tag&intentL2Tag&intentDesc。",
-      "searchQueries": ["string", "..."]  // 可选数组，最多2个元素，按真实用户的搜索习惯书写。需要借助网络搜索获取信息时生成，模型自身知识即可回答时不生成。
+  "type": "object",
+  "properties": {
+    "add": {
+      "type": "array",
+      "description": "预测出的新增意图；同一 coSpaceName 下最多 2 个，超过时保留对当前推荐最必要、价值最高的候选。",
+      "items": {
+        "type": "object",
+        "properties": {
+          "reasoning": {
+            "type": "string",
+            "maxLength": 30,
+            "description": "触发来源及事实依据。以触发来源开头（对话/感知信号/场景变化，多个来源时并列），再说明支持该意图的事实。"
+          },
+          "intentDesc": {
+            "type": "string",
+            "description": "用户视角的意图描述，主体名词需要指代明确。"
+          },
+          "intentType": {
+            "type": "string",
+            "enum": ["ShortTermIntent", "LongTermIntent"],
+            "description": "意图类型，按「时间规则」确定。"
+          },
+          "startTime": {
+            "type": "string",
+            "description": "可选，目标预计开始时间，按「时间规则」确定。"
+          },
+          "expireTime": {
+            "type": "string",
+            "description": "可选，目标预计结束/失效时间，按「时间规则」确定。"
+          },
+          "intentL1Tag": {
+            "type": "string",
+            "description": "一级标签，取标签分类体系中的键名。"
+          },
+          "intentL2Tag": {
+            "type": "string",
+            "description": "二级标签，取 intentL1Tag 对应数组中的值。"
+          },
+          "coSpaceName": {
+            "type": "string",
+            "description": "可选，不得推断：来源于 diff 且对应条目 isCoSpace=true 时必须输出，为该条目的 subSceneTag。"
+          },
+          "subSceneTag": {
+            "type": "string",
+            "description": "可选，必须与输入完全一致：来源于 diff 时必须输出，为对应条目的 subSceneTag。"
+          },
+          "matchedIntent": {
+            "type": "string",
+            "description": "可选。与 active_list 或 deleted_list 中已有意图重复（判断标准见 Intent 消解）时，填写其 intentL1Tag&intentL2Tag&intentDesc。"
+          },
+          "searchQueries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "description": "可选，按真实用户的搜索习惯书写。需要借助网络搜索获取信息时生成，模型自身知识即可回答时不生成。"
+          }
+        },
+        "required": [
+          "reasoning",
+          "intentDesc",
+          "intentType",
+          "intentL1Tag",
+          "intentL2Tag"
+        ]
+      }
+    },
+    "delete": {
+      "type": "array",
+      "description": "需要删除的 active_list 中已有意图（触发条件见「增删判定」）。",
+      "items": {
+        "type": "object",
+        "properties": {
+          "reasoning": {
+            "type": "string",
+            "maxLength": 30,
+            "description": "目标完成、取消或不再需要关注的事实依据。"
+          },
+          "matchedIntent": {
+            "type": "string",
+            "description": "active_list 中被删除意图的 intentL1Tag&intentL2Tag&intentDesc。"
+          }
+        },
+        "required": ["reasoning", "matchedIntent"]
+      }
     }
-  ],
-  "delete": [
-    {
-      "reasoning": "string，最多30字符。目标完成、取消或不再需要关注的事实依据。",
-      "matchedIntent": "string，必填。active_list 中被删除意图的 intentL1Tag&intentL2Tag&intentDesc。"
-    }
-  ]
+  },
+  "required": ["add", "delete"]
 }
 
-字段说明：
-- `add`：数组，预测出的新增意图；同一 coSpaceName 下最多 2 个，超过时保留对当前推荐最必要、价值最高的候选。
-- `delete`：数组，需要删除的 active_list 中已有意图（触发条件见「增删判定」）。
-
-严禁包含任何 JSON 结构以外的文字或 Markdown 标记（如 \```json）。
+请输出一个遵循上述参数Schema的 JSON 对象。严禁包含任何 JSON 结构以外的文字、Markdown 标记（如 ```json）或注释：
+{
+<args-json-object>
+}
