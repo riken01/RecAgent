@@ -1,0 +1,320 @@
+{
+  "backend": "hivoice",
+  "count": 5,
+  "freshness": "noLimit",
+  "timestamp": "2026-10-17 16:36:10",
+  "cases": [
+    {
+      "source": "ugpc",
+      "name": "感知信号-1: 退出金铲铲之战应用...",
+      "note": "semanticDescription: 退出金铲铲之战应用",
+      "trigger": {
+        "type": "memoryUpdate",
+        "before": "",
+        "after": "[感知信号] 退出金铲铲之战应用"
+      },
+      "context": {
+        "current_time": "2026-10-17T10:00:00",
+        "active_intents": [],
+        "delete_intents": [],
+        "user_md": "",
+        "cospace_memory": {
+          "userProfile": "",
+          "overview": ""
+        },
+        "user_states": []
+      },
+      "step1": {
+        "analysis": "用户退出金铲铲之战应用，仅有一次应用退出行为，无其他相关事实或兴趣线索，不足以推断具体需求或消费意愿。",
+        "directions": [],
+        "searchQueries": []
+      },
+      "search_results": [],
+      "step2": {
+        "candidates": []
+      },
+      "step3": {
+        "add": [],
+        "delete": []
+      },
+      "final": {
+        "add": [],
+        "delete": []
+      },
+      "index": 7
+    },
+    {
+      "source": "ugpc",
+      "name": "感知信号-2: 进入三国志·战略版应用...",
+      "note": "semanticDescription: 进入三国志·战略版应用",
+      "trigger": {
+        "type": "memoryUpdate",
+        "before": "",
+        "after": "[感知信号] 进入三国志·战略版应用"
+      },
+      "context": {
+        "current_time": "2026-10-17T10:00:00",
+        "active_intents": [],
+        "delete_intents": [],
+        "user_md": "",
+        "cospace_memory": {
+          "userProfile": "",
+          "overview": ""
+        },
+        "user_states": []
+      },
+      "step1": {
+        "analysis": "用户刚进入三国志·战略版应用，仅有打开行为，无明确需求或兴趣线索，不能仅凭一次打开App推断具体兴趣或消费意愿。",
+        "directions": [],
+        "searchQueries": []
+      },
+      "search_results": [],
+      "step2": {
+        "candidates": []
+      },
+      "step3": {
+        "add": [],
+        "delete": []
+      },
+      "final": {
+        "add": [],
+        "delete": []
+      },
+      "index": 8
+    },
+    {
+      "source": "ugpc",
+      "name": "感知信号-3: 进入王者荣耀应用...",
+      "note": "semanticDescription: 进入王者荣耀应用",
+      "trigger": {
+        "type": "memoryUpdate",
+        "before": "",
+        "after": "[感知信号] 进入王者荣耀应用"
+      },
+      "context": {
+        "current_time": "2026-10-17T10:00:00",
+        "active_intents": [],
+        "delete_intents": [],
+        "user_md": "",
+        "cospace_memory": {
+          "userProfile": "",
+          "overview": ""
+        },
+        "user_states": []
+      },
+      "step1": {
+        "analysis": "用户进入王者荣耀应用，仅有一次应用打开行为，无其他相关事实或历史意图，不足以推断具体兴趣或需求，避免编造消费或游戏内容偏好。",
+        "directions": [],
+        "searchQueries": []
+      },
+      "search_results": [],
+      "step2": {
+        "candidates": []
+      },
+      "step3": {
+        "add": [],
+        "delete": []
+      },
+      "final": {
+        "add": [],
+        "delete": []
+      },
+      "index": 9
+    },
+    {
+      "source": "ugpc",
+      "name": "感知信号-4: 单次连续使用小红书达到1分钟...",
+      "note": "semanticDescription: 单次连续使用小红书达到1分钟",
+      "trigger": {
+        "type": "memoryUpdate",
+        "before": "",
+        "after": "[感知信号] 单次连续使用小红书达到1分钟"
+      },
+      "context": {
+        "current_time": "2026-10-17T10:00:00",
+        "active_intents": [],
+        "delete_intents": [],
+        "user_md": "",
+        "cospace_memory": {
+          "userProfile": "",
+          "overview": ""
+        },
+        "user_states": []
+      },
+      "step1": {
+        "analysis": "用户单次连续使用小红书达1分钟，仅有一次行为记录，缺乏持续兴趣或具体需求依据，不足以推断具体意图或消费意愿。",
+        "directions": [],
+        "searchQueries": []
+      },
+      "search_results": [],
+      "step2": {
+        "candidates": []
+      },
+      "step3": {
+        "add": [],
+        "delete": []
+      },
+      "final": {
+        "add": [],
+        "delete": []
+      },
+      "index": 10
+    },
+    {
+      "source": "ugpc",
+      "name": "感知信号-5: 进入洛克王国：世界应用...",
+      "note": "semanticDescription: 进入洛克王国：世界应用",
+      "trigger": {
+        "type": "memoryUpdate",
+        "before": "",
+        "after": "[感知信号] 进入洛克王国：世界应用"
+      },
+      "context": {
+        "current_time": "2026-10-17T10:00:00",
+        "active_intents": [],
+        "delete_intents": [],
+        "user_md": "",
+        "cospace_memory": {
+          "userProfile": "",
+          "overview": ""
+        },
+        "user_states": []
+      },
+      "step1": {
+        "analysis": "用户刚进入洛克王国：世界应用，仅有感知信号，无明确需求或兴趣线索，不能仅凭打开应用推断具体意图或消费意愿。",
+        "directions": [],
+        "searchQueries": []
+      },
+      "search_results": [],
+      "step2": {
+        "candidates": []
+      },
+      "step3": {
+        "add": [],
+        "delete": []
+      },
+      "final": {
+        "add": [],
+        "delete": []
+      },
+      "index": 11
+    },
+    {
+      "source": "ugpc",
+      "name": "感知信号-6: 退出帝国征服者应用...",
+      "note": "semanticDescription: 退出帝国征服者应用",
+      "trigger": {
+        "type": "memoryUpdate",
+        "before": "",
+        "after": "[感知信号] 退出帝国征服者应用"
+      },
+      "context": {
+        "current_time": "2026-10-17T10:00:00",
+        "active_intents": [],
+        "delete_intents": [],
+        "user_md": "",
+        "cospace_memory": {
+          "userProfile": "",
+          "overview": ""
+        },
+        "user_states": []
+      },
+      "step1": {
+        "analysis": "用户退出帝国征服者应用，仅有一次应用退出行为，无其他相关线索或历史目标，不足以推断具体兴趣或需求，不强行规划方向。",
+        "directions": [],
+        "searchQueries": []
+      },
+      "search_results": [],
+      "step2": {
+        "candidates": []
+      },
+      "step3": {
+        "add": [],
+        "delete": []
+      },
+      "final": {
+        "add": [],
+        "delete": []
+      },
+      "index": 12
+    },
+    {
+      "source": "ugpc",
+      "name": "感知信号-7: 退出王者万象棋应用...",
+      "note": "semanticDescription: 退出王者万象棋应用",
+      "trigger": {
+        "type": "memoryUpdate",
+        "before": "",
+        "after": "[感知信号] 退出王者万象棋应用"
+      },
+      "context": {
+        "current_time": "2026-10-17T10:00:00",
+        "active_intents": [],
+        "delete_intents": [],
+        "user_md": "",
+        "cospace_memory": {
+          "userProfile": "",
+          "overview": ""
+        },
+        "user_states": []
+      },
+      "step1": {
+        "analysis": "用户退出王者万象棋应用，仅有一次应用退出行为，无其他相关线索或明确需求，不足以推断具体兴趣或消费意愿，不强行规划方向。",
+        "directions": [],
+        "searchQueries": []
+      },
+      "search_results": [],
+      "step2": {
+        "candidates": []
+      },
+      "step3": {
+        "add": [],
+        "delete": []
+      },
+      "final": {
+        "add": [],
+        "delete": []
+      },
+      "index": 13
+    },
+    {
+      "source": "ugpc",
+      "name": "感知信号-8: 单次连续使用运动健康达到1分钟...",
+      "note": "semanticDescription: 单次连续使用运动健康达到1分钟",
+      "trigger": {
+        "type": "memoryUpdate",
+        "before": "",
+        "after": "[感知信号] 单次连续使用运动健康达到1分钟"
+      },
+      "context": {
+        "current_time": "2026-10-17T10:00:00",
+        "active_intents": [],
+        "delete_intents": [],
+        "user_md": "",
+        "cospace_memory": {
+          "userProfile": "",
+          "overview": ""
+        },
+        "user_states": []
+      },
+      "step1": {
+        "analysis": "用户单次连续使用运动健康达1分钟，触发感知信号，表明开始关注运动健康，但仅一次行为不足以推断长期兴趣或具体需求，需谨慎规划。",
+        "directions": [],
+        "searchQueries": []
+      },
+      "search_results": [],
+      "step2": {
+        "candidates": []
+      },
+      "step3": {
+        "add": [],
+        "delete": []
+      },
+      "final": {
+        "add": [],
+        "delete": []
+      },
+      "index": 14
+    }
+  ]
+}
